@@ -30,7 +30,7 @@ spork ~ initMIDI();
 fun void initMIDI() {
     MidiIn midiIn;
     MidiMsg msg;
-    midiIn.open( 2 );
+    midiIn.open( 0 );
     <<< "Midi: " + midiIn.name() >>>;
     while(true) {
         midiIn => now;
