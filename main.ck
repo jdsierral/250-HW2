@@ -2,24 +2,27 @@ Moog instr[8];
 ADSR env[8];
 Gain mixer;
 Gain envelope;
+float envGain;
 
-mixer => envelope => dac;
+mixer => envelope;
+envelope => dac;
 mixer.gain(0.125);
+vec3 smoother;
+0 => int mapping;
+0.1 => float threshold;
+40::ms => dur smooRate;
+smoother.set(0, 0, .05 * (second/smooRate));
 
 
 for (0 => int i; i < 8; i++) {
     instr[i] => env[i] => mixer;
     instr[i].vibratoGain(0.0);
-    instr[i].freq( Std.mtof(60 + mapKey(i)) );
-    instr[i].noteOn(127.0);
+    instr[i].vibratoFreq(6);
+    instr[i].freq( Std.mtof(64 + mapKey(i)) );
+    instr[i].noteOn(100.0);
     env[i].set(100::ms, 100::ms, 0.8, 200::ms);
 }
 
-1 => int mapping;
-0.1 => float threshold;
-vec3 smoother;
-10::ms => dur smooRate;
-smoother.set(0, 0, .05 * (second/smooRate));
 
 spork ~ interpolate( smooRate );
 spork ~ initMIDI();
@@ -48,38 +51,44 @@ fun void initMIDI() {
 
 fun void interpolate( dur delta ) {
     while( true ){
-        smoother.interp( delta ) => envelope.gain;
+        smoother.interp( delta ) => float gain;
+        /* if ( gain < threshold ) { 0 => gain; } */
+        gain => envelope.gain;
         delta => now;
     }
 }
 
 fun void processEnvelopeData(int data) {
-    data / 128.0 => float gain;
-    Math.max(Math.min(gain, 1), 0) => gain;
 
-    <<< data + ", " + gain >>>;
-    /* if (gain > 0.1) {
+    Math.fabs(data - 63.5) / 64.0 => float gain;
+    /* Std.dbtorms(Math.min(gain, 64) * 3) => gain; */
+    if (gain < threshold) 0 => gain;
+    /* if ( gain < threshold ) { 0 => gain; } */
+
+    if (gain > 0.4) {
         for (0 => int i; i < 8; i++) {
-            instr[i].vibratoGain(0.2);
+            instr[i].vibratoGain(0.007);
         }
     } else {
         for (0 => int i; i < 8; i++) {
             instr[i].vibratoGain(0.0);
         }
-    } */
-    smoother.update(gain);
+    }
+    gain => envGain;
+    /* smoother.update( gain ); */
+    /* <<< data + ", " + gain >>>; */
 }
 
 fun void processButtonOn(int key) {
     key - 60 => int note;
     if (note >= 0 && note < 8)
-    env[note].keyOn();
+        env[note].keyOn();
 }
 
 fun void processButtonOff(int key) {
     key - 60 => int note;
     if (note >= 0 && note < 8)
-    env[note].keyOff();
+        env[note].keyOff();
 }
 
 fun int mapKey(int key) {
@@ -122,6 +131,6 @@ fun int mapKey(int key) {
 
 
 while(true) {
-    1::samp => now;
-    /* smoother.update(Std.fabs(input.last())); */
+    0.5::ms => now;
+    smoother.update(envGain);
 }

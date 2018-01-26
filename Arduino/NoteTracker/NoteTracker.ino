@@ -15,7 +15,7 @@ const int D_IN[D_PINS] = {4, 7, 2, 6, 20, 17, 23, 19};
 //{4, 8, 3, 7, 2, 6, 1, 5}
 
 
-const int BOUNCE_TIME = 5;
+const int BOUNCE_TIME = 10;
 const int note[D_PINS] = {60, 61, 62, 63, 64, 65, 66, 67};
 
 byte data;
@@ -58,7 +58,8 @@ void getAnalogData() {
   if (analog.hasChanged()) {
     data = float(analog.getValue()/8.0);
     float dc = tickDC(data);
-    float val = 2 * tickMagnitude( data - dc );
+//    float val = 2 * tickMagnitude( data - dc );
+    int val = int(data - dc + 64);
     usbMIDI.sendControlChange(7, val, CHAN);
   }
 }
