@@ -12,6 +12,8 @@ To do that simple push down resistors were used in all the sensors of 10kΩ for 
 
 The following video shows the possibilities of this controller.
 
+https://www.youtube.com/watch?v=SCQtkaEi10I
+
 
 
 
