@@ -56,11 +56,8 @@ void loop() {
 void getAnalogData() {
   analog.update();
   if (analog.hasChanged()) {
-    data = float(analog.getValue()/8.0);
-    float dc = tickDC(data);
-//    float val = 2 * tickMagnitude( data - dc );
-    int val = int(data - dc + 64);
-    usbMIDI.sendControlChange(7, val, CHAN);
+    data = analog.getValue() >> 3;
+    usbMIDI.sendControlChange(7, data, CHAN);
   }
 }
 
@@ -76,14 +73,14 @@ void getDigitalData() {
   }
 }
 
-float tickDC(float newdcVal) {
-  dc += (1 - 0.9999) * (newdcVal - dc);
-  return dc;
-}
-
-float tickMagnitude(float newAmplitude) {
-  mag += (1 - 0.99) * (fabs(newAmplitude) - mag);
-  return mag;
-}
+//float tickDC(float newdcVal) {
+//  dc += (1 - 0.9999) * (newdcVal - dc);
+//  return dc;
+//}
+//
+//float tickMagnitude(float newAmplitude) {
+//  mag += (1 - 0.99) * (fabs(newAmplitude) - mag);
+//  return mag;
+//}
 
 

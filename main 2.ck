@@ -5,7 +5,8 @@ Gain envelope;
 float envGain;
 
 mixer => envelope;
-envelope => dac;
+envelope => dac.chan(8);
+envelope => dac.chan(9);
 mixer.gain(0.125);
 vec3 smoother;
 0 => int mapping;
@@ -30,7 +31,7 @@ spork ~ initMIDI();
 fun void initMIDI() {
     MidiIn midiIn;
     MidiMsg msg;
-    midiIn.open( 0 );
+    midiIn.open( "Teensy MIDI" );
     <<< "Midi: " + midiIn.name() >>>;
     while(true) {
         midiIn => now;
@@ -44,7 +45,6 @@ fun void initMIDI() {
             if (msg.data1 == 176) {
                 processEnvelopeData(msg.data3);
             }
-            /* <<< "device: ", msg.data1, msg.data2, msg.data3 >>>; */
         }
     }
 }
